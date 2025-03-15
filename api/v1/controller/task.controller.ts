@@ -2,12 +2,14 @@ import { Request, Response } from "express";
 import Task from "../models/task.model";
 import { paginationHelper } from "../../../helpers/paginationHelper";
 import { count } from "console";
+import { searchHelper } from "../../../helpers/search";
 
 export const index = async (req: Request, res: Response) => {
   //Find
   interface Find {
     deleted: boolean;
     status?: string;
+    title?: RegExp;
   }
 
   const find: Find = {
@@ -40,6 +42,13 @@ export const index = async (req: Request, res: Response) => {
   );
 
   //End Pagination
+
+  //Search
+  const objectSearch = searchHelper(req.query);
+  if (objectSearch.regex) {
+    find.title = objectSearch.regex;
+  }
+  //End Search
   const tasks = await Task.find(find)
     .sort(sort)
     .limit(objectPagination.limitItems)
@@ -60,4 +69,28 @@ export const detail = async (req: Request, res: Response) => {
   });
 
   res.json(task);
+};
+
+// [PATCH] /api/v1/tasks/change-status/:id
+export const changeStatus = async (req: Request, res: Response) => {
+  try {
+    type StatusType = "initial" | "doing" | "finish" | "pending" | "notFinish";
+
+    const id: string = req.params.id;
+    const status: StatusType = req.body.status;
+
+    console.log(id);
+
+    await Task.updateOne({ _id: id }, { status: status });
+
+    res.json({
+      code: 200,
+      message: "Cập nhật trạng thái thành công!",
+    });
+  } catch (error) {
+    res.json({
+      code: 400,
+      message: "Không tồn tại!",
+    });
+  }
 };
