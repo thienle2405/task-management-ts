@@ -3,6 +3,7 @@
     "target": "ES6",
     "module": "commonjs",
     "esModuleInterop": true, //Dùng import thay cho require
-    "removeComments": true
+    "removeComments": true,
+    "outDir": "dist"
   }
 }
